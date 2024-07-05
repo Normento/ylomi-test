@@ -21,7 +21,6 @@ class RegisteredUserController extends Controller
      */
     public function register(RegisterRequest $request)
     {
-        // Créer un nouvel utilisateur
         $verificationCode = rand(100000, 999999);
         $user = User::create([
             'name' => $request->name,
@@ -32,7 +31,6 @@ class RegisteredUserController extends Controller
             'is_active' => false,
         ]);
 
-        // Envoyer le code de vérification par e-mail
         $userMail[] = $user->email;
         (new NotificationService)->toEmails($userMail)->sendMail(
             new MailObject(
@@ -50,7 +48,6 @@ class RegisteredUserController extends Controller
             )
         );
 
-        // Retourner une réponse JSON
         return response()->json([
             'status' => true,
             'message' => 'Inscription réussie. Un code de vérification a été envoyé à votre e-mail.'

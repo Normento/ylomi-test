@@ -23,7 +23,6 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request)
     {
         try {
-            // Tentative de connexion avec les informations fournies
             if (!Auth::attempt($request->only(['email', 'password']))) {
                 return response()->json([
                     'status' => false,
@@ -33,9 +32,7 @@ class AuthenticatedSessionController extends Controller
 
             $user = User::where('email', $request->email)->first();
 
-            // Vérifier si le compte utilisateur est activé
             if ($user->is_active !== 1) {
-                // Si le compte n'est pas activé, renvoyer un code de vérification par e-mail
                 $verificationCode = mt_rand(100000, 999999);
                 $user->verification_code = $verificationCode;
                 $user->save();
@@ -85,7 +82,6 @@ class AuthenticatedSessionController extends Controller
         // Supprimer tous les tokens de l'utilisateur
         auth()->user()->tokens()->delete();
 
-        // Retourner un message de confirmation
         return response()->json([
             'status' => true,
             'message' => 'Vous vous êtes déconnecté avec succès et le token a été supprimé avec succès'
