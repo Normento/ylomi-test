@@ -6,8 +6,10 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\BankAccount;
 use Illuminate\Console\Command;
+use App\Notifications\MailObject;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\DeactivatedAccountsReport;
+use App\Notifications\NotificationService;
 
 class SendDeactivatedAccountsReport extends Command
 {
@@ -37,7 +39,23 @@ class SendDeactivatedAccountsReport extends Command
         $admins = User::where('is_admin', true)->get();
 
         foreach ($admins as $admin) {
-            Mail::to($admin->email)->send(new DeactivatedAccountsReport($deactivatedAccounts));
+
+            $userMail[] = $admin->email;
+            (new NotificationService)->toEmails($userMail)->sendMail(
+                new MailObject(
+                    subject: 'Rapport des comptes désactivés du mois',
+                    title: 'Rapport des comptes désactivés du mois',
+                    // intro: 'Voici votre code de réinitialisation',
+                    corpus: 'Rapport des comptes désactivés du mois',
+                    outro: "Rapport des comptes désactivés du mois",
+                    template: 'emails.deactivated_accounts_report',
+                    data: [
+                        "reports" => $deactivatedAccounts,
+                        "nom" => $admin->name,
+                    ],
+
+                )
+            );
         }
 
         $this->info('Rapport des comptes désactivés envoyé aux administrateurs.');
